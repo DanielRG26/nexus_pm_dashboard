@@ -30,7 +30,13 @@ function loadProjects(): Project[] {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored) {
     try {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored) as Record<string, unknown>[];
+      return parsed.map((p) => ({
+        ...(p as unknown as Project),
+        tasks: Array.isArray(p.tasks) ? (p.tasks as Task[]) : [],
+        description: typeof p.description === "string" ? p.description : "",
+        priority: typeof p.priority === "string" ? (p.priority as Project["priority"]) : "Media",
+      }));
     } catch {
       return [];
     }
