@@ -156,9 +156,9 @@ export default function Page() {
         {/* Top accent bar */}
         <div className="h-1 bg-gradient-to-r from-blue-500 via-violet-500 to-emerald-500" />
 
-        <div className="mx-auto max-w-6xl space-y-6 p-6 md:px-10 md:py-8">
+        <div className="mx-auto max-w-6xl space-y-6 p-4 pt-14 sm:p-6 md:px-10 md:py-8 md:pt-8">
           {/* Header */}
-          <div className="flex flex-col gap-4 pl-12 sm:flex-row sm:items-end sm:justify-between md:pl-0">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div className="space-y-1">
               <h1 className="text-2xl font-bold tracking-tight">
                 {activeView === "dashboard" ? "Dashboard" : "Proyectos"}

@@ -166,7 +166,7 @@ export function ProjectTable({ projects, onStatusChange, onDelete, onEdit }: Pro
         </div>
         <div className="flex gap-2">
           <Select value={filterStatus} onValueChange={setFilterStatus}>
-            <SelectTrigger className="w-[130px]">
+            <SelectTrigger className="w-full sm:w-[130px]">
               <SelectValue placeholder="Estado" />
             </SelectTrigger>
             <SelectContent>
@@ -177,7 +177,7 @@ export function ProjectTable({ projects, onStatusChange, onDelete, onEdit }: Pro
             </SelectContent>
           </Select>
           <Select value={filterPriority} onValueChange={setFilterPriority}>
-            <SelectTrigger className="w-[130px]">
+            <SelectTrigger className="w-full sm:w-[130px]">
               <SelectValue placeholder="Prioridad" />
             </SelectTrigger>
             <SelectContent>
@@ -191,17 +191,17 @@ export function ProjectTable({ projects, onStatusChange, onDelete, onEdit }: Pro
       </div>
 
       {/* Table */}
-      <div className="overflow-hidden rounded-xl border">
+      <div className="overflow-x-auto rounded-xl border">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50 hover:bg-muted/50">
-              <TableHead className="font-semibold">Proyecto</TableHead>
-              <TableHead className="font-semibold">Responsable</TableHead>
-              <TableHead className="font-semibold">Fecha límite</TableHead>
-              <TableHead className="font-semibold">Prioridad</TableHead>
-              <TableHead className="font-semibold">Progreso</TableHead>
-              <TableHead className="font-semibold">Estado</TableHead>
-              <TableHead className="w-12" />
+              <TableHead className="font-semibold min-w-[180px]">Proyecto</TableHead>
+              <TableHead className="font-semibold min-w-[130px]">Responsable</TableHead>
+              <TableHead className="font-semibold min-w-[130px]">Fecha límite</TableHead>
+              <TableHead className="font-semibold min-w-[100px]">Prioridad</TableHead>
+              <TableHead className="font-semibold min-w-[120px]">Progreso</TableHead>
+              <TableHead className="font-semibold min-w-[110px]">Estado</TableHead>
+              <TableHead className="w-12 min-w-[48px]" />
             </TableRow>
           </TableHeader>
           <TableBody>

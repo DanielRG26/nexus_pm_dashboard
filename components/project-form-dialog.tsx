@@ -158,7 +158,7 @@ export function ProjectFormDialog({
               <p className="text-xs text-destructive">{errors.responsible}</p>
             )}
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <div className="grid gap-2">
               <Label htmlFor="deadline">Fecha límite</Label>
               <Input
