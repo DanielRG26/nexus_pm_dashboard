@@ -21,6 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 const STORAGE_KEY = "nexus-pm-projects";
@@ -180,8 +181,16 @@ export default function Page() {
             </Button>
           </div>
 
+          <AnimatePresence mode="wait">
           {activeView === "dashboard" ? (
-            <>
+            <motion.div
+              key="dashboard"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              className="space-y-6"
+            >
               {/* Overview Cards */}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <ProjectCard
@@ -190,6 +199,7 @@ export default function Page() {
                   icon={LayoutDashboard}
                   accent="violet"
                   description="Proyectos registrados"
+                  index={0}
                 />
                 <ProjectCard
                   title="Activos"
@@ -197,6 +207,7 @@ export default function Page() {
                   icon={FolderOpen}
                   accent="blue"
                   description="En progreso"
+                  index={1}
                 />
                 <ProjectCard
                   title="Completados"
@@ -204,6 +215,7 @@ export default function Page() {
                   icon={CheckCircle2}
                   accent="emerald"
                   description="Finalizados"
+                  index={2}
                 />
                 <ProjectCard
                   title="Vencidos"
@@ -211,11 +223,17 @@ export default function Page() {
                   icon={AlertTriangle}
                   accent="amber"
                   description="Requieren atención"
+                  index={3}
                 />
               </div>
 
               {/* Dashboard content */}
-              <div className="grid gap-6 lg:grid-cols-3">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.3 }}
+                className="grid gap-6 lg:grid-cols-3"
+              >
                 {/* Recent projects */}
                 <Card className="lg:col-span-2">
                   <CardHeader>
@@ -340,10 +358,17 @@ export default function Page() {
                     </div>
                   </CardContent>
                 </Card>
-              </div>
-            </>
+              </motion.div>
+            </motion.div>
           ) : (
             /* Projects view with tabs */
+            <motion.div
+              key="projects"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
             <Tabs defaultValue="table">
               <TabsList>
                 <TabsTrigger value="table">Tabla</TabsTrigger>
@@ -372,12 +397,17 @@ export default function Page() {
                   </div>
                 ) : (
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                    {projects.map((p) => {
+                    {projects.map((p, i) => {
                       const progress = getTaskProgress(p);
                       return (
-                        <Card
+                        <motion.div
                           key={p.id}
-                          className="cursor-pointer transition-shadow hover:shadow-md"
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ duration: 0.3, delay: i * 0.08 }}
+                        >
+                        <Card
+                          className="cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
                           onClick={() => openDetail(p)}
                         >
                           <CardHeader className="pb-3">
@@ -434,13 +464,16 @@ export default function Page() {
                             </div>
                           </CardContent>
                         </Card>
+                        </motion.div>
                       );
                     })}
                   </div>
                 )}
               </TabsContent>
             </Tabs>
+            </motion.div>
           )}
+          </AnimatePresence>
         </div>
       </div>
 

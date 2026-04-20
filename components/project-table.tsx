@@ -53,6 +53,7 @@ import {
   Pencil,
   Trash2,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Project, ProjectStatus, ProjectPriority } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -88,50 +89,26 @@ const priorityConfig: Record<
   ProjectPriority,
   { icon: typeof ArrowUpCircle; className: string }
 > = {
-  Alta: {
-    icon: ArrowUpCircle,
-    className: "text-red-600 dark:text-red-400",
-  },
-  Media: {
-    icon: ArrowRightCircle,
-    className: "text-amber-600 dark:text-amber-400",
-  },
-  Baja: {
-    icon: ArrowDownCircle,
-    className: "text-blue-600 dark:text-blue-400",
-  },
+  Alta: { icon: ArrowUpCircle, className: "text-red-600 dark:text-red-400" },
+  Media: { icon: ArrowRightCircle, className: "text-amber-600 dark:text-amber-400" },
+  Baja: { icon: ArrowDownCircle, className: "text-blue-600 dark:text-blue-400" },
 };
 
 function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
+  return name.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2);
 }
 
 function formatDate(dateStr: string) {
   const date = new Date(dateStr + "T00:00:00");
-  return date.toLocaleDateString("es-ES", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
+  return date.toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" });
 }
 
 function getTaskProgress(project: Project) {
   if (project.tasks.length === 0) return 0;
-  const done = project.tasks.filter((t) => t.completed).length;
-  return Math.round((done / project.tasks.length) * 100);
+  return Math.round((project.tasks.filter((t) => t.completed).length / project.tasks.length) * 100);
 }
 
-export function ProjectTable({
-  projects,
-  onStatusChange,
-  onDelete,
-  onEdit,
-}: ProjectTableProps) {
+export function ProjectTable({ projects, onStatusChange, onDelete, onEdit }: ProjectTableProps) {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<string>("all");
   const [filterPriority, setFilterPriority] = useState<string>("all");
@@ -142,27 +119,40 @@ export function ProjectTable({
       p.title.toLowerCase().includes(search.toLowerCase()) ||
       p.responsible.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = filterStatus === "all" || p.status === filterStatus;
-    const matchesPriority =
-      filterPriority === "all" || p.priority === filterPriority;
+    const matchesPriority = filterPriority === "all" || p.priority === filterPriority;
     return matchesSearch && matchesStatus && matchesPriority;
   });
 
   if (projects.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16">
-        <div className="rounded-full bg-muted p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.4 }}
+        className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16"
+      >
+        <motion.div
+          className="rounded-full bg-muted p-4"
+          animate={{ y: [0, -6, 0] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
           <FolderOpen className="size-8 text-muted-foreground" />
-        </div>
+        </motion.div>
         <h3 className="mt-4 text-lg font-semibold">No hay proyectos</h3>
         <p className="mt-1 text-sm text-muted-foreground">
           Crea tu primer proyecto para comenzar a gestionar.
         </p>
-      </div>
+      </motion.div>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+      className="space-y-4"
+    >
       {/* Search & Filters */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <div className="relative flex-1">
@@ -215,142 +205,124 @@ export function ProjectTable({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.length === 0 ? (
-              <TableRow>
-                <TableCell
-                  colSpan={7}
-                  className="py-8 text-center text-muted-foreground"
-                >
-                  No se encontraron proyectos con esos filtros.
-                </TableCell>
-              </TableRow>
-            ) : (
-              filtered.map((project) => {
-                const sConfig = statusConfig[project.status];
-                const pConfig = priorityConfig[project.priority];
-                const StatusIcon = sConfig.icon;
-                const PriorityIcon = pConfig.icon;
-                const progress = getTaskProgress(project);
-                return (
-                  <TableRow
-                    key={project.id}
-                    className="transition-colors hover:bg-muted/30"
-                  >
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">
-                          {getInitials(project.title)}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="font-medium truncate">
-                            {project.title}
+            <AnimatePresence mode="popLayout">
+              {filtered.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="py-8 text-center text-muted-foreground">
+                    No se encontraron proyectos con esos filtros.
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filtered.map((project, i) => {
+                  const sConfig = statusConfig[project.status];
+                  const pConfig = priorityConfig[project.priority];
+                  const StatusIcon = sConfig.icon;
+                  const PriorityIcon = pConfig.icon;
+                  const progress = getTaskProgress(project);
+                  return (
+                    <motion.tr
+                      key={project.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: 20, height: 0 }}
+                      transition={{ duration: 0.3, delay: i * 0.05 }}
+                      className="border-b transition-colors hover:bg-muted/30"
+                    >
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-xs font-bold text-primary">
+                            {getInitials(project.title)}
                           </div>
-                          {project.description && (
-                            <div className="text-xs text-muted-foreground truncate max-w-[200px]">
-                              {project.description}
-                            </div>
-                          )}
+                          <div className="min-w-0">
+                            <div className="font-medium truncate">{project.title}</div>
+                            {project.description && (
+                              <div className="text-xs text-muted-foreground truncate max-w-[200px]">
+                                {project.description}
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <User className="size-3.5 shrink-0" />
-                        <span className="truncate">{project.responsible}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <CalendarDays className="size-3.5 shrink-0" />
-                        {formatDate(project.deadline)}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div
-                        className={cn(
-                          "flex items-center gap-1.5 text-sm font-medium",
-                          pConfig.className
-                        )}
-                      >
-                        <PriorityIcon className="size-4" />
-                        {project.priority}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2 min-w-[100px]">
-                        <Progress value={progress} className="h-2 flex-1" />
-                        <span className="text-xs text-muted-foreground w-8 text-right">
-                          {progress}%
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge
-                        variant="outline"
-                        className={cn(
-                          "gap-1 border font-medium",
-                          sConfig.className
-                        )}
-                      >
-                        <StatusIcon className="size-3" />
-                        {project.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon-xs">
-                            <MoreHorizontal />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => onEdit(project)}>
-                            <Pencil className="mr-2 size-4" />
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuLabel>Cambiar estado</DropdownMenuLabel>
-                          {(
-                            ["Activo", "Completado", "Vencido"] as ProjectStatus[]
-                          ).map((s) => (
-                            <DropdownMenuItem
-                              key={s}
-                              disabled={project.status === s}
-                              onClick={() => onStatusChange(project.id, s)}
-                            >
-                              {s}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <User className="size-3.5 shrink-0" />
+                          <span className="truncate">{project.responsible}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <CalendarDays className="size-3.5 shrink-0" />
+                          {formatDate(project.deadline)}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className={cn("flex items-center gap-1.5 text-sm font-medium", pConfig.className)}>
+                          <PriorityIcon className="size-4" />
+                          {project.priority}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2 min-w-[100px]">
+                          <Progress value={progress} className="h-2 flex-1" />
+                          <span className="text-xs text-muted-foreground w-8 text-right">{progress}%</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={cn("gap-1 border font-medium", sConfig.className)}>
+                          <StatusIcon className="size-3" />
+                          {project.status}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon-xs">
+                              <MoreHorizontal />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => onEdit(project)}>
+                              <Pencil className="mr-2 size-4" />
+                              Editar
                             </DropdownMenuItem>
-                          ))}
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
-                            onClick={() => setDeleteId(project.id)}
-                          >
-                            <Trash2 className="mr-2 size-4" />
-                            Eliminar
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                );
-              })
-            )}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuLabel>Cambiar estado</DropdownMenuLabel>
+                            {(["Activo", "Completado", "Vencido"] as ProjectStatus[]).map((s) => (
+                              <DropdownMenuItem
+                                key={s}
+                                disabled={project.status === s}
+                                onClick={() => onStatusChange(project.id, s)}
+                              >
+                                {s}
+                              </DropdownMenuItem>
+                            ))}
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-destructive focus:text-destructive"
+                              onClick={() => setDeleteId(project.id)}
+                            >
+                              <Trash2 className="mr-2 size-4" />
+                              Eliminar
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </motion.tr>
+                  );
+                })
+              )}
+            </AnimatePresence>
           </TableBody>
         </Table>
       </div>
 
       {/* Delete confirmation */}
-      <AlertDialog
-        open={!!deleteId}
-        onOpenChange={(open) => !open && setDeleteId(null)}
-      >
+      <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>¿Eliminar proyecto?</AlertDialogTitle>
             <AlertDialogDescription>
-              Esta acción no se puede deshacer. El proyecto y todas sus tareas
-              serán eliminados permanentemente.
+              Esta acción no se puede deshacer. El proyecto y todas sus tareas serán eliminados permanentemente.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -367,6 +339,6 @@ export function ProjectTable({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </motion.div>
   );
 }
