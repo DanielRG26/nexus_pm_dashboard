@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,7 +8,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,26 +19,52 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Sparkles } from "lucide-react";
-import { Project, ProjectStatus } from "@/lib/types";
+import { Sparkles, Pencil } from "lucide-react";
+import { Project, ProjectStatus, ProjectPriority } from "@/lib/types";
 
 interface ProjectFormDialogProps {
-  onAdd: (project: Project) => void;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSubmit: (project: Project) => void;
+  editingProject?: Project | null;
 }
 
-export function ProjectFormDialog({ onAdd }: ProjectFormDialogProps) {
-  const [open, setOpen] = useState(false);
+export function ProjectFormDialog({
+  open,
+  onOpenChange,
+  onSubmit,
+  editingProject,
+}: ProjectFormDialogProps) {
   const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
   const [responsible, setResponsible] = useState("");
   const [deadline, setDeadline] = useState("");
   const [status, setStatus] = useState<ProjectStatus>("Activo");
+  const [priority, setPriority] = useState<ProjectPriority>("Media");
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const isEditing = !!editingProject;
+
+  useEffect(() => {
+    if (editingProject) {
+      setTitle(editingProject.title);
+      setDescription(editingProject.description);
+      setResponsible(editingProject.responsible);
+      setDeadline(editingProject.deadline);
+      setStatus(editingProject.status);
+      setPriority(editingProject.priority);
+    } else {
+      resetForm();
+    }
+  }, [editingProject, open]);
 
   function resetForm() {
     setTitle("");
+    setDescription("");
     setResponsible("");
     setDeadline("");
     setStatus("Activo");
+    setPriority("Media");
     setErrors({});
   }
 
@@ -57,39 +82,44 @@ export function ProjectFormDialog({ onAdd }: ProjectFormDialogProps) {
     e.preventDefault();
     if (!validate()) return;
 
-    onAdd({
-      id: crypto.randomUUID(),
+    onSubmit({
+      id: editingProject?.id ?? crypto.randomUUID(),
       title: title.trim(),
+      description: description.trim(),
       responsible: responsible.trim(),
       deadline,
       status,
+      priority,
+      tasks: editingProject?.tasks ?? [],
     });
     resetForm();
-    setOpen(false);
+    onOpenChange(false);
   }
 
   return (
     <Dialog
       open={open}
       onOpenChange={(v) => {
-        setOpen(v);
+        onOpenChange(v);
         if (!v) resetForm();
       }}
     >
-      <DialogTrigger asChild>
-        <Button size="lg">
-          <Plus data-icon="inline-start" />
-          Añadir Proyecto
-        </Button>
-      </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <div className="mx-auto mb-2 flex size-12 items-center justify-center rounded-full bg-primary/10">
-            <Sparkles className="size-6 text-primary" />
+            {isEditing ? (
+              <Pencil className="size-6 text-primary" />
+            ) : (
+              <Sparkles className="size-6 text-primary" />
+            )}
           </div>
-          <DialogTitle className="text-center">Nuevo Proyecto</DialogTitle>
+          <DialogTitle className="text-center">
+            {isEditing ? "Editar Proyecto" : "Nuevo Proyecto"}
+          </DialogTitle>
           <DialogDescription className="text-center">
-            Completa los campos para añadir un proyecto al dashboard.
+            {isEditing
+              ? "Modifica los campos del proyecto."
+              : "Completa los campos para añadir un proyecto."}
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="grid gap-4 pt-2">
@@ -107,6 +137,15 @@ export function ProjectFormDialog({ onAdd }: ProjectFormDialogProps) {
             )}
           </div>
           <div className="grid gap-2">
+            <Label htmlFor="description">Descripción (opcional)</Label>
+            <Input
+              id="description"
+              placeholder="Breve descripción del proyecto"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+          <div className="grid gap-2">
             <Label htmlFor="responsible">Responsable</Label>
             <Input
               id="responsible"
@@ -119,7 +158,7 @@ export function ProjectFormDialog({ onAdd }: ProjectFormDialogProps) {
               <p className="text-xs text-destructive">{errors.responsible}</p>
             )}
           </div>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-3">
             <div className="grid gap-2">
               <Label htmlFor="deadline">Fecha límite</Label>
               <Input
@@ -134,7 +173,23 @@ export function ProjectFormDialog({ onAdd }: ProjectFormDialogProps) {
               )}
             </div>
             <div className="grid gap-2">
-              <Label htmlFor="status">Estado inicial</Label>
+              <Label htmlFor="priority">Prioridad</Label>
+              <Select
+                value={priority}
+                onValueChange={(v) => setPriority(v as ProjectPriority)}
+              >
+                <SelectTrigger id="priority">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Alta">Alta</SelectItem>
+                  <SelectItem value="Media">Media</SelectItem>
+                  <SelectItem value="Baja">Baja</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="status">Estado</Label>
               <Select
                 value={status}
                 onValueChange={(v) => setStatus(v as ProjectStatus)}
@@ -154,11 +209,13 @@ export function ProjectFormDialog({ onAdd }: ProjectFormDialogProps) {
             <Button
               type="button"
               variant="outline"
-              onClick={() => setOpen(false)}
+              onClick={() => onOpenChange(false)}
             >
               Cancelar
             </Button>
-            <Button type="submit">Crear Proyecto</Button>
+            <Button type="submit">
+              {isEditing ? "Guardar Cambios" : "Crear Proyecto"}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>
