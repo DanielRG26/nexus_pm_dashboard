@@ -9,52 +9,21 @@ import { ProjectFormDialog } from "@/components/project-form-dialog";
 
 const STORAGE_KEY = "nexus-pm-projects";
 
-const initialProjects: Project[] = [
-  {
-    id: "1",
-    title: "Rediseño del sitio web",
-    responsible: "Ana García",
-    deadline: "2026-05-15",
-    status: "Activo",
-  },
-  {
-    id: "2",
-    title: "App móvil v2",
-    responsible: "Carlos López",
-    deadline: "2026-03-01",
-    status: "Vencido",
-  },
-  {
-    id: "3",
-    title: "Migración a la nube",
-    responsible: "María Torres",
-    deadline: "2026-06-30",
-    status: "Activo",
-  },
-  {
-    id: "4",
-    title: "Sistema de facturación",
-    responsible: "Pedro Ruiz",
-    deadline: "2026-01-20",
-    status: "Completado",
-  },
-];
-
 function loadProjects(): Project[] {
-  if (typeof window === "undefined") return initialProjects;
+  if (typeof window === "undefined") return [];
   const stored = localStorage.getItem(STORAGE_KEY);
   if (stored) {
     try {
       return JSON.parse(stored);
     } catch {
-      return initialProjects;
+      return [];
     }
   }
-  return initialProjects;
+  return [];
 }
 
 export default function Page() {
-  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [projects, setProjects] = useState<Project[]>([]);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
